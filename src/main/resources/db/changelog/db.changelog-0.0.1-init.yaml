@@ -1,0 +1,142 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-create-client-table
+      author: ilya55tr
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: client
+      changes:
+        - createTable:
+            tableName: client
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+              - column:
+                  name: citizenship
+                  type: VARCHAR(100)
+              - column:
+                  name: client_type
+                  type: VARCHAR(100)
+              - column:
+                  name: document_number
+                  type: VARCHAR(100)
+              - column:
+                  name: document_series
+                  type: VARCHAR(100)
+              - column:
+                  name: document_type
+                  type: VARCHAR(100)
+              - column:
+                  name: mdm_code
+                  type: BIGINT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 02-create-account_status-table
+      author: ilya55tr
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: account_status
+      changes:
+        - createTable:
+            tableName: account_status
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 03-create-account-table
+      author: ilya55tr
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: account
+      changes:
+        - createTable:
+            tableName: account
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: client_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: account_type
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency_code
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: account
+            baseColumnNames: status_id
+            referencedTableName: account_status
+            referencedColumnNames: id
+            constraintName: fk_account_status
+        - addForeignKeyConstraint:
+            baseTableName: account
+            baseColumnNames: client_id
+            referencedTableName: client
+            referencedColumnNames: id
+            constraintName: fk_account_client

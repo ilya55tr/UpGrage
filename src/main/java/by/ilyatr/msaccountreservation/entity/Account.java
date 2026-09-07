@@ -8,11 +8,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "account")
@@ -24,6 +27,7 @@ public class Account {
 
   @Id
   @GeneratedValue
+  @Column(name = "id")
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -39,4 +43,12 @@ public class Account {
 
   @Column(name = "currency_code", nullable = false)
   private String currencyCode;
+
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private LocalDateTime createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at", nullable = false)
+  private LocalDateTime updatedAt;
 }
