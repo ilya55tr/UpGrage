@@ -13,3 +13,12 @@ spring:
   liquibase:
     enabled: true
     change-log: /db/changelog/db.changelog-master.yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,threaddump
+        exclude: shutdown
+  server:
+    port: 8081
