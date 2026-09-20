@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/db.changelog-0.0.1-init.yaml
   - include:
       file: db/changelog/db.changelog-0.0.2-insert-data-account-status.yaml
+  - include:
+      file: db/changelog/db.changelog-0.0.3-add-status-to-client.yaml

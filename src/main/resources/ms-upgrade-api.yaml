@@ -1,0 +1,490 @@
+openapi: 3.0.3
+
+info:
+  title: Client API
+  description: REST API для управления клиентами
+  version: 1.0.0
+
+tags:
+  - name: Clients
+    description: Операции с клиентами
+
+paths:
+  /api/v1/clients:
+    post:
+      tags:
+        - Clients
+      summary: Создание нового клиента
+      operationId: createClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClientRequest'
+      responses:
+        '201':
+          description: Клиент успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+        '400':
+          description: Невалидные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Клиент с таким mdmCode уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Clients
+      summary: Поиск клиентов с пагинацией
+      operationId: searchClients
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Размер страницы
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 20
+        - name: fullName
+          in: query
+          description: Фильтр по ФИО
+          required: false
+          schema:
+            type: string
+        - name: mdmCode
+          in: query
+          description: Фильтр по MDM-коду
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Список клиентов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageClientResponse'
+
+  /api/v1/clients/{clientId}:
+    get:
+      tags:
+        - Clients
+      summary: Получение клиента по ID
+      operationId: getClientById
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Клиент найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+        '404':
+          description: Клиент не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Clients
+      summary: Обновление клиента
+      operationId: updateClient
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClientRequest'
+      responses:
+        '200':
+          description: Клиент успешно обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+        '400':
+          description: Невалидные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Клиент не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Clients
+      summary: Удаление клиента
+      description: Soft delete клиента
+      operationId: deleteClient
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '204':
+          description: Клиент успешно удалён
+        '404':
+          description: Клиент не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: У клиента есть активные счета
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/clients/{clientId}/exists:
+    get:
+      tags:
+        - Clients
+      summary: Проверка существования клиента
+      operationId: clientExists
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Результат проверки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientExistsResponse'
+        '404':
+          description: Клиент не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+components:
+  parameters:
+    ClientId:
+      name: clientId
+      in: path
+      required: true
+      description: UUID клиента
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ClientStatus:
+      type: string
+      description: Статус клиента
+      enum:
+        - ACTIVE
+        - BLOCKED
+        - DELETED
+    CreateClientRequest:
+      type: object
+      required:
+        - fullName
+        - citizenship
+        - clientType
+        - documentNumber
+        - documentSeries
+        - documentType
+        - mdmCode
+      properties:
+        fullName:
+          type: string
+          description: ФИО клиента
+          example: Иван Петров Сергеевич
+          minLength: 1
+          maxLength: 255
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        citizenship:
+          type: string
+          description: Гражданство клиента
+          example: RU
+          minLength: 1
+          maxLength: 100
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        clientType:
+          type: string
+          description: Тип клиента
+          example: INDIVIDUAL
+          minLength: 1
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        documentNumber:
+          type: string
+          description: Номер документа
+          example: 123456
+          minLength: 1
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        documentSeries:
+          type: string
+          description: Серия документа
+          example: 1234
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        documentType:
+          type: string
+          description: Тип документа
+          example: PASSPORT
+          minLength: 1
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        mdmCode:
+          type: integer
+          format: int64
+          description: Уникальный MDM-код клиента
+          example: 1234567890
+
+    UpdateClientRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: ФИО клиента
+          example: Иван Петров Сергеевич
+          minLength: 1
+          maxLength: 255
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        citizenship:
+          type: string
+          description: Гражданство клиента
+          example: RU
+          maxLength: 100
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        clientType:
+          type: string
+          description: Тип клиента
+          example: INDIVIDUAL
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        documentNumber:
+          type: string
+          description: Номер документа
+          example: 123456
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        documentSeries:
+          type: string
+          description: Серия документа
+          example: 1234
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+        documentType:
+          type: string
+          description: Тип документа
+          example: PASSPORT
+          maxLength: 50
+          x-field-extra-annotation: "@jakarta.validation.constraints.NotBlank"
+
+    ClientResponse:
+      type: object
+      required:
+        - id
+        - mdmCode
+        - fullName
+        - citizenship
+        - clientType
+        - documentNumber
+        - documentSeries
+        - documentType
+        - status
+        - createdAt
+        - updatedAt
+        - hasAccounts
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID клиента
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+          readOnly: true
+        mdmCode:
+          type: integer
+          format: int64
+          description: Уникальный MDM-код клиента
+          example: 1234567890
+        fullName:
+          type: string
+          description: ФИО клиента
+          example: Иван Петров Сергеевич
+        citizenship:
+          type: string
+          description: Гражданство клиента
+          example: RU
+        clientType:
+          type: string
+          description: Тип клиента
+          example: INDIVIDUAL
+        documentNumber:
+          type: string
+          description: Номер документа
+          example: 123456
+        documentSeries:
+          type: string
+          description: Серия документа
+          example: 1234
+        documentType:
+          type: string
+          description: Тип документа
+          example: PASSPORT
+        status:
+          $ref: '#/components/schemas/ClientStatus'
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания
+          example: '2024-01-15T10:30:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+          example: '2024-01-15T11:45:00Z'
+        hasAccounts:
+          type: boolean
+          description: Наличие счетов клиента
+          example: false
+
+    ClientShortResponse:
+      type: object
+      required:
+        - id
+        - mdmCode
+        - fullName
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        mdmCode:
+          type: integer
+          format: int64
+          example: 1234567890
+        fullName:
+          type: string
+          example: Иван Петров Сергеевич
+        status:
+          $ref: '#/components/schemas/ClientStatus'
+
+    PageClientResponse:
+      type: object
+      required:
+        - content
+        - pageable
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientShortResponse'
+        pageable:
+          $ref: '#/components/schemas/PageMetadata'
+
+    PageMetadata:
+      type: object
+      required:
+        - pageNumber
+        - pageSize
+        - totalPages
+        - totalElements
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+          example: 0
+        pageSize:
+          type: integer
+          format: int32
+          example: 20
+        totalPages:
+          type: integer
+          format: int32
+          example: 1
+        totalElements:
+          type: integer
+          format: int64
+          example: 1
+
+    ClientExistsResponse:
+      type: object
+      required:
+        - exists
+        - clientId
+        - status
+      properties:
+        exists:
+          type: boolean
+          example: true
+        clientId:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        status:
+          $ref: '#/components/schemas/ClientStatus'
+
+    ErrorCode:
+      type: string
+      description: Текстовый мнемокод ошибки
+      enum:
+        - VALIDATION_ERROR
+        - CLIENT_NOT_FOUND
+        - CLIENT_ALREADY_EXISTS
+        - CLIENT_HAS_ACTIVE_ACCOUNTS
+        - INTERNAL_ERROR
+
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - statusCode
+      properties:
+        errorCode:
+          $ref: '#/components/schemas/ErrorCode'
+        errorDescription:
+          type: string
+          description: Бизнес-описание ошибки
+          example: Клиент с указанным mdmCode уже существует
+        statusCode:
+          type: integer
+          format: int32
+          description: HTTP-код ошибки
+          example: 409
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

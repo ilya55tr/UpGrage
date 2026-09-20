@@ -21,4 +21,4 @@ management:
         include: health,threaddump
         exclude: shutdown
   server:
-    port: 8081
+    port: ${SERVER_PORT:8081}

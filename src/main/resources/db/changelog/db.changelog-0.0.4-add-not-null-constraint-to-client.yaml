@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-not-null-constraint-to-client
+      author: ilya55tr
+      changes:
+        - addNotNullConstraint:
+            tableName: client
+            columnName: full_name
+        - addNotNullConstraint:
+            tableName: client
+            columnName: citizenship
+        - addNotNullConstraint:
+            tableName: client
+            columnName: client_type
+        - addNotNullConstraint:
+            tableName: client
+            columnName: document_number
+        - addNotNullConstraint:
+            tableName: client
+            columnName: document_series
+        - addNotNullConstraint:
+            tableName: client
+            columnName: document_type
+        - addNotNullConstraint:
+            tableName: client
+            columnName: mdm_code
