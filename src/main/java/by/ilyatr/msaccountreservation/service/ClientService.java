@@ -38,7 +38,7 @@ public class ClientService {
     Client savedClient = clientRepository.saveAndFlush(
         clientMapper.toClient(request)
     );
-    return clientMapper.toResponse(savedClient);
+    return clientMapper.toResponse(savedClient, hasAnyAccounts(savedClient.getId()));
   }
 
   @Transactional(readOnly = true)
@@ -73,7 +73,7 @@ public class ClientService {
     Client client = clientRepository.findById(clientId)
         .filter(c -> c.getStatus() != ClientStatus.DELETED)
         .orElseThrow(() -> new ClientNotFoundException(clientId));
-    return clientMapper.toResponse(client);
+    return clientMapper.toResponse(client, hasAnyAccounts(clientId));
   }
 
   @Transactional
@@ -81,8 +81,8 @@ public class ClientService {
     Client client = clientRepository.findById(clientId)
         .filter(c -> c.getStatus() != ClientStatus.DELETED)
         .orElseThrow(() -> new ClientNotFoundException(clientId));
-    client = clientMapper.updateClient(client, request);
-    return clientMapper.toResponse(clientRepository.saveAndFlush(client));
+    client = clientMapper.updateClient(request, client);
+    return clientMapper.toResponse(clientRepository.saveAndFlush(client), hasAnyAccounts(clientId));
   }
 
   @Transactional
@@ -108,10 +108,11 @@ public class ClientService {
   }
 
   private boolean hasActiveAccounts(UUID clientId) {
-    return accountRepository.existsByClientIdAndStatusName(
-        clientId,
-        "CREATED"
-    );
+    return accountRepository.existsByClientIdAndStatusName(clientId, "CREATED");
+  }
+
+  private boolean hasAnyAccounts(UUID clientId) {
+    return accountRepository.existsByClientId(clientId);
   }
 
 }

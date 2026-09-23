@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/db.changelog-0.0.2-insert-data-account-status.yaml
   - include:
       file: db/changelog/db.changelog-0.0.3-add-status-to-client.yaml
+  - include:
+      file: db/changelog/db.changelog-0.0.4-add-not-null-constraint-to-client.yaml
+  - include:
+      file: db/changelog/db.changelog-0.0.5-add-client_id-index-for-account.yaml

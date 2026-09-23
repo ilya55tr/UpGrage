@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-iclient_id-index-for-account
+      author: ilya55tr
+      changes:
+        - createIndex:
+            tableName: account
+            indexName: idx_account_client_id
+            columns:
+              - column:
+                  name: client_id
