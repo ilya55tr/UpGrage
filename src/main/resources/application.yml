@@ -14,6 +14,12 @@ spring:
     enabled: true
     change-log: /db/changelog/db.changelog-master.yaml
 
+app:
+  currency-client:
+    base-url: https://api.frankfurter.dev
+    connect-timeout: 3000
+    read-timeout: 5000
+
 management:
   endpoints:
     web:
