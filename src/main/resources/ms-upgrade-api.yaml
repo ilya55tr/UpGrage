@@ -8,8 +8,67 @@ info:
 tags:
   - name: Clients
     description: Операции с клиентами
+  - name: Currencies
+    description: Курсы валют
+
+servers:
+  - url: http://localhost:8080
 
 paths:
+  /api/v1/currencies/rate:
+    get:
+      tags:
+        - Currencies
+      summary: Получение курса обмена валют
+      operationId: getExchangeRate
+      parameters:
+        - name: from
+          in: query
+          description: Код исходной валюты (ISO 4217)
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z]{3}$'
+            example: USD
+        - name: to
+          in: query
+          description: Код целевой валюты (ISO 4217)
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z]{3}$'
+            example: EUR
+      responses:
+        '200':
+          description: Курс получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRateDto'
+        '400':
+          description: Невалидный код валюты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Внешний API отклонил запрос (например, неизвестная валюта)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Ошибка внешнего сервиса курсов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Сервис курсов недоступен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/clients:
     post:
       tags:
@@ -201,6 +260,22 @@ components:
         format: uuid
 
   schemas:
+    ExchangeRateDto:
+      type: object
+      required:
+        - from
+        - to
+        - rate
+      properties:
+        from:
+          type: string
+          example: USD
+        to:
+          type: string
+          example: EUR
+        rate:
+          type: number
+          example: 0.92
     ClientStatus:
       type: string
       description: Статус клиента
@@ -459,7 +534,11 @@ components:
         - CLIENT_NOT_FOUND
         - CLIENT_ALREADY_EXISTS
         - CLIENT_HAS_ACTIVE_ACCOUNTS
+        - CURRENCY_REQUEST_REJECTED
+        - CURRENCY_SERVICE_ERROR
+        - CURRENCY_SERVICE_UNAVAILABLE
         - INTERNAL_ERROR
+        - CURRENCY_RATE_LIMIT_EXCEEDED
 
     ErrorResponse:
       type: object
@@ -480,11 +559,11 @@ components:
           description: HTTP-код ошибки
           example: 409
 
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-security:
-  - bearerAuth: []
+#  securitySchemes:
+#    bearerAuth:
+#      type: http
+#      scheme: bearer
+#      bearerFormat: JWT
+#
+#security:
+#  - bearerAuth: []

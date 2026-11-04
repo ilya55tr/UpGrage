@@ -14,11 +14,25 @@ spring:
     enabled: true
     change-log: /db/changelog/db.changelog-master.yaml
 
+app:
+  currency-client:
+    enabled: ${APP_CURRENCY_CLIENT_ENABLED:true}
+    logger-level: ${APP_CURRENCY_CLIENT_LOGGER_LEVEL:FULL}
+
+logging:
+  level:
+    "by.ilyatr.currencyclientstarter.client.CurrencyFeignClient": ${APP_CURRENCY_CLIENT_LOG_LEVEL:DEBUG}
+
 management:
+  endpoint:
+    health:
+      show-details: always
+
   endpoints:
     web:
       exposure:
         include: health,threaddump
         exclude: shutdown
+
   server:
     port: ${SERVER_PORT:8081}

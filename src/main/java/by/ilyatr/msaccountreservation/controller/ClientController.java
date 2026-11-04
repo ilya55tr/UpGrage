@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClientController implements ClientsApi {
 
   private final ClientService clientService;
+  
 
   @Override
   public ResponseEntity<ClientResponse> createClient(@Valid CreateClientRequest request) {

@@ -1,6 +1,11 @@
 package by.ilyatr.msaccountreservation.exception;
 
 
+import by.ilyatr.currencyclientstarter.exception.CurrencyApiClientErrorException;
+import by.ilyatr.currencyclientstarter.exception.CurrencyApiInvalidResponseException;
+import by.ilyatr.currencyclientstarter.exception.CurrencyApiRateLimitExceededException;
+import by.ilyatr.currencyclientstarter.exception.CurrencyApiServerErrorException;
+import by.ilyatr.currencyclientstarter.exception.CurrencyApiUnavailableException;
 import by.ilyatr.msaccountreservation.model.ErrorCode;
 import by.ilyatr.msaccountreservation.model.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
@@ -17,6 +22,36 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(CurrencyApiClientErrorException.class)
+  public ResponseEntity<ErrorResponse> handleCurrencyClientError(CurrencyApiClientErrorException exception) {
+    log.warn("Currency API rejected request: status={}, body={}",
+        exception.getStatus(), exception.getResponseBody());
+    return buildResponse(ErrorCode.CURRENCY_REQUEST_REJECTED,
+        exception.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+  }
+
+  @ExceptionHandler(CurrencyApiServerErrorException.class)
+  public ResponseEntity<ErrorResponse> handleCurrencyServerError(CurrencyApiServerErrorException exception) {
+    log.error("Currency API failed: status={}, body={}",
+        exception.getStatus(), exception.getResponseBody());
+    return buildResponse(ErrorCode.CURRENCY_SERVICE_ERROR,
+        "Currency service error", HttpStatus.BAD_GATEWAY);
+  }
+
+  @ExceptionHandler(CurrencyApiInvalidResponseException.class)
+  public ResponseEntity<ErrorResponse> handleCurrencyInvalidResponse(CurrencyApiInvalidResponseException exception) {
+    log.error("Currency API invalid response: {}", exception.getMessage());
+    return buildResponse(ErrorCode.CURRENCY_SERVICE_ERROR,
+        "Currency service error", HttpStatus.BAD_GATEWAY);
+  }
+
+  @ExceptionHandler(CurrencyApiUnavailableException.class)
+  public ResponseEntity<ErrorResponse> handleCurrencyUnavailable(CurrencyApiUnavailableException exception) {
+    log.error("Currency API is unavailable", exception);
+    return buildResponse(ErrorCode.CURRENCY_SERVICE_UNAVAILABLE,
+        "Currency service is unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+  }
 
   @ExceptionHandler(ClientNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleClientNotFound(ClientNotFoundException exception) {
@@ -85,6 +120,13 @@ public class GlobalExceptionHandler {
         "Internal server error",
         HttpStatus.INTERNAL_SERVER_ERROR
     );
+  }
+
+  @ExceptionHandler(CurrencyApiRateLimitExceededException.class)
+  public ResponseEntity<ErrorResponse> handleCurrencyRateLimit(CurrencyApiRateLimitExceededException exception) {
+    log.warn("Outgoing rate limit to Currency API exceeded");
+    return buildResponse(ErrorCode.CURRENCY_RATE_LIMIT_EXCEEDED,
+        "Too many currency requests, try later", HttpStatus.TOO_MANY_REQUESTS);
   }
 
   private ResponseEntity<ErrorResponse> buildResponse(
