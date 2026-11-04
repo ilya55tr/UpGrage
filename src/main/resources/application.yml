@@ -16,15 +16,23 @@ spring:
 
 app:
   currency-client:
-    base-url: https://api.frankfurter.dev
-    connect-timeout: 3000
-    read-timeout: 5000
+    enabled: ${APP_CURRENCY_CLIENT_ENABLED:true}
+    logger-level: ${APP_CURRENCY_CLIENT_LOGGER_LEVEL:FULL}
+
+logging:
+  level:
+    "by.ilyatr.currencyclientstarter.client.CurrencyFeignClient": ${APP_CURRENCY_CLIENT_LOG_LEVEL:DEBUG}
 
 management:
+  endpoint:
+    health:
+      show-details: always
+
   endpoints:
     web:
       exposure:
         include: health,threaddump
         exclude: shutdown
+
   server:
     port: ${SERVER_PORT:8081}

@@ -1,5 +1,7 @@
 package by.ilyatr.currencyclientstarter.properties;
 
+import feign.Logger;
+import java.time.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,18 +11,43 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class CurrencyClientProperties {
 
-  /**
-   * Base URL внешнего API.
-   */
+  private boolean enabled = false;
+
   private String baseUrl = "https://api.frankfurter.dev";
 
-  /**
-   * Timeout подключения в миллисекундах.
-   */
-  private int connectTimeout = 3000;
+  private String ratePath = "/v2/rate";
 
-  /**
-   * Timeout чтения в миллисекундах.
-   */
-  private int readTimeout = 5000;
+  private Logger.Level loggerLevel = Logger.Level.BASIC;
+
+  private final TimeoutProperties timeout = new TimeoutProperties();
+  private final RetryProperties retry = new RetryProperties();
+  private final RateLimiterProperties rateLimiter = new RateLimiterProperties();
+
+  @Getter
+  @Setter
+  public static class TimeoutProperties {
+    private Duration connectTimeout = Duration.ofSeconds(3);
+    private Duration readTimeout = Duration.ofSeconds(5);
+  }
+
+  @Getter
+  @Setter
+  public static class RetryProperties {
+    private int maxAttempts = 3;
+    private Duration waitDuration = Duration.ofMillis(500);
+  }
+
+  @Getter
+  @Setter
+  public static class RateLimiterProperties {
+    private int limitForPeriod = 10;
+    private Duration limitRefreshPeriod = Duration.ofSeconds(1);
+    private Duration timeoutDuration = Duration.ZERO;
+  }
+
+  @Getter
+  @Setter
+  public static class HealthProperties {
+    private boolean enabled = true;
+  }
 }
