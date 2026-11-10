@@ -5,6 +5,18 @@ spring:
     password: ${DATABASE_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  cache:
+    type: redis
+    cache-names: exchangeRates
+    redis:
+      time-to-live: 30m
+      cache-null-values: false
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -31,7 +43,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,threaddump
+        include: health,threaddump, prometheus
         exclude: shutdown
 
   server:
