@@ -11,6 +11,8 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -53,8 +55,18 @@ public class CurrencyClientAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(CurrencyService.class)
-  public CurrencyService currencyService(CurrencyFeignClient client, Retry currencyApiRetry, RateLimiter currencyApiRateLimiter) {
-    return new FeignCurrencyService(client, currencyApiRetry, currencyApiRateLimiter);
+  public CurrencyService currencyService(
+      CurrencyFeignClient client,
+      Retry currencyApiRetry,
+      RateLimiter currencyApiRateLimiter,
+      MeterRegistry meterRegistry
+  ) {
+    Counter exchangeRateRequests = Counter
+        .builder("currency.exchange.rate.requests")
+        .description("External currency API request attempts from CurrencyService")
+        .register(meterRegistry);
+
+    return new FeignCurrencyService(client, currencyApiRetry, currencyApiRateLimiter, exchangeRateRequests);
   }
 
   @Configuration(proxyBeanMethods = false)

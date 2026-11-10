@@ -1,0 +1,14 @@
+stages:
+  - review
+
+code-review:
+  stage: review
+  image: python:3.12-bookworm
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID == $CI_MERGE_REQUEST_TARGET_PROJECT_ID'
+  resource_group: code-review-${CI_MERGE_REQUEST_IID}
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - python -I -m pip install --disable-pip-version-check --no-cache-dir tree-sitter==0.25.2 tree-sitter-java==0.23.5
+    - python -I -B .gitlab/code_review.py
