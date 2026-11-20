@@ -6,11 +6,14 @@ import by.ilyatr.currencyclientstarter.health.CurrencyApiHealthIndicator;
 import by.ilyatr.currencyclientstarter.properties.CurrencyClientProperties;
 import by.ilyatr.currencyclientstarter.service.CurrencyService;
 import by.ilyatr.currencyclientstarter.service.FeignCurrencyService;
+import by.ilyatr.currencyclientstarter.service.MetricsService;
 import feign.RetryableException;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -52,9 +55,19 @@ public class CurrencyClientAutoConfiguration {
   }
 
   @Bean
+  public MetricsService metricsService(MeterRegistry meterRegistry){
+    return new MetricsService(meterRegistry);
+  }
+
+  @Bean
   @ConditionalOnMissingBean(CurrencyService.class)
-  public CurrencyService currencyService(CurrencyFeignClient client, Retry currencyApiRetry, RateLimiter currencyApiRateLimiter) {
-    return new FeignCurrencyService(client, currencyApiRetry, currencyApiRateLimiter);
+  public CurrencyService currencyService(
+      CurrencyFeignClient client,
+      Retry currencyApiRetry,
+      RateLimiter currencyApiRateLimiter,
+      MetricsService metricsService
+  ) {
+    return new FeignCurrencyService(client, currencyApiRetry, currencyApiRateLimiter, metricsService);
   }
 
   @Configuration(proxyBeanMethods = false)
