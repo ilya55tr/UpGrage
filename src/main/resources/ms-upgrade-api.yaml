@@ -10,11 +10,58 @@ tags:
     description: Операции с клиентами
   - name: Currencies
     description: Курсы валют
-
+  - name: ClientSummary
+    description: Получение сводок по клиенту
 servers:
   - url: http://localhost:8080
 
 paths:
+  /api/v1/clients/{clientId}/summary:
+    get:
+      tags:
+        - ClientSummary
+      summary: Получение данных клиента и курсов валют
+      operationId: getClientSummary
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Клиент и оба курса получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSummaryResponse'
+        '400':
+          description: Некорректный UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Клиент не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Ошибка при получении курса валют
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Пул сводок перегружен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '504':
+          description: Истекло время ожидания сводки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/currencies/rate:
     get:
       tags:
@@ -260,6 +307,21 @@ components:
         format: uuid
 
   schemas:
+    ClientSummaryResponse:
+      type: object
+      required:
+        - client
+        - exchangeRates
+      properties:
+        client:
+          $ref: '#/components/schemas/ClientResponse'
+        exchangeRates:
+          type: object
+          additionalProperties:
+            type: number
+          example:
+            USD/RUB: 92.50
+            EUR/RUB: 100.25
     ExchangeRateDto:
       type: object
       required:
@@ -530,6 +592,8 @@ components:
       type: string
       description: Текстовый мнемокод ошибки
       enum:
+        - CLIENT_SUMMARY_OVERLOAD
+        - CLIENT_SUMMARY_TIMEOUT
         - VALIDATION_ERROR
         - CLIENT_NOT_FOUND
         - CLIENT_ALREADY_EXISTS
