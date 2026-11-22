@@ -26,31 +26,37 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(CurrencyApiClientErrorException.class)
   public ResponseEntity<ErrorResponse> handleCurrencyClientError(CurrencyApiClientErrorException exception) {
     log.warn("Currency API rejected request: status={}, body={}",
-        exception.getStatus(), exception.getResponseBody());
+        exception.getStatus(), exception.getResponseBody()
+    );
     return buildResponse(ErrorCode.CURRENCY_REQUEST_REJECTED,
-        exception.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        exception.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY
+    );
   }
 
   @ExceptionHandler(CurrencyApiServerErrorException.class)
   public ResponseEntity<ErrorResponse> handleCurrencyServerError(CurrencyApiServerErrorException exception) {
     log.error("Currency API failed: status={}, body={}",
-        exception.getStatus(), exception.getResponseBody());
+        exception.getStatus(), exception.getResponseBody()
+    );
     return buildResponse(ErrorCode.CURRENCY_SERVICE_ERROR,
-        "Currency service error", HttpStatus.BAD_GATEWAY);
+        "Currency service error", HttpStatus.BAD_GATEWAY
+    );
   }
 
   @ExceptionHandler(CurrencyApiInvalidResponseException.class)
   public ResponseEntity<ErrorResponse> handleCurrencyInvalidResponse(CurrencyApiInvalidResponseException exception) {
     log.error("Currency API invalid response: {}", exception.getMessage());
     return buildResponse(ErrorCode.CURRENCY_SERVICE_ERROR,
-        "Currency service error", HttpStatus.BAD_GATEWAY);
+        "Currency service error", HttpStatus.BAD_GATEWAY
+    );
   }
 
   @ExceptionHandler(CurrencyApiUnavailableException.class)
   public ResponseEntity<ErrorResponse> handleCurrencyUnavailable(CurrencyApiUnavailableException exception) {
     log.error("Currency API is unavailable", exception);
     return buildResponse(ErrorCode.CURRENCY_SERVICE_UNAVAILABLE,
-        "Currency service is unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+        "Currency service is unavailable", HttpStatus.SERVICE_UNAVAILABLE
+    );
   }
 
   @ExceptionHandler(ClientNotFoundException.class)
@@ -125,14 +131,32 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(CurrencyApiRateLimitExceededException.class)
   public ResponseEntity<ErrorResponse> handleCurrencyRateLimit(CurrencyApiRateLimitExceededException exception) {
     log.warn("Outgoing rate limit to Currency API exceeded");
-    return buildResponse(ErrorCode.CURRENCY_RATE_LIMIT_EXCEEDED,
-        "Too many currency requests, try later", HttpStatus.TOO_MANY_REQUESTS);
+    return buildResponse(
+        ErrorCode.CURRENCY_RATE_LIMIT_EXCEEDED,
+        exception.getMessage(),
+        HttpStatus.TOO_MANY_REQUESTS
+    );
   }
 
-  private ResponseEntity<ErrorResponse> buildResponse(
-      ErrorCode errorCode,
-      String description,
-      HttpStatus status) {
+  @ExceptionHandler(ClientSummaryTimeoutException.class)
+  public ResponseEntity<ErrorResponse> handleTimeout(ClientSummaryTimeoutException exception) {
+    return buildResponse(
+        ErrorCode.CLIENT_SUMMARY_TIMEOUT,
+        exception.getMessage(),
+        HttpStatus.GATEWAY_TIMEOUT
+    );
+  }
+
+  @ExceptionHandler(ClientSummaryOverloaded.class)
+  public ResponseEntity<ErrorResponse> handleRejectedExecution(ClientSummaryOverloaded exception) {
+    return buildResponse(
+        ErrorCode.CLIENT_SUMMARY_OVERLOAD,
+        exception.getMessage(),
+        HttpStatus.SERVICE_UNAVAILABLE
+    );
+  }
+
+  private ResponseEntity<ErrorResponse> buildResponse(ErrorCode errorCode, String description, HttpStatus status) {
     ErrorResponse response = ErrorResponse.builder()
         .errorCode(errorCode)
         .errorDescription(description)

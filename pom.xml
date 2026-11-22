@@ -175,6 +175,7 @@
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/ms-upgrade-api.yaml</inputSpec>
                             <generatorName>spring</generatorName>
+                            <apisToGenerate>Clients,Currencies</apisToGenerate>
                             <apiPackage>by.ilyatr.msaccountreservation.api</apiPackage>
                             <modelPackage>by.ilyatr.msaccountreservation.model</modelPackage>
 
@@ -192,12 +193,37 @@
                                 <useTags>true</useTags>
                                 <generateConstructorWithAllArgs>false</generateConstructorWithAllArgs>
                                 <generateBuilderMethod>false</generateBuilderMethod>
+                                <skipDefaultInterface>true</skipDefaultInterface>
                                 <additionalModelTypeAnnotations>
                                     @lombok.Data
                                     @lombok.Builder(toBuilder=true)
                                     @lombok.AllArgsConstructor
                                     @lombok.NoArgsConstructor
                                 </additionalModelTypeAnnotations>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>generate-client-summary-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/ms-upgrade-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>by.ilyatr.msaccountreservation.api</apiPackage>
+                            <modelPackage>by.ilyatr.msaccountreservation.model</modelPackage>
+                            <output>${project.build.directory}/generated-sources/openapi-summary</output>
+                            <apisToGenerate>ClientSummary</apisToGenerate>
+                            <generateModels>false</generateModels>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <useTags>true</useTags>
+                                <async>true</async>
+                                <skipDefaultInterface>true</skipDefaultInterface>
                             </configOptions>
                         </configuration>
                     </execution>

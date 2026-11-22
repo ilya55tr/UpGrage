@@ -30,6 +30,11 @@ app:
   currency-client:
     enabled: ${APP_CURRENCY_CLIENT_ENABLED:true}
     logger-level: ${APP_CURRENCY_CLIENT_LOGGER_LEVEL:FULL}
+  async:
+    core-size: 4
+    max-size: 8
+    queue-capacity: 32
+    summary-timeout: 5s
 
 logging:
   level:
